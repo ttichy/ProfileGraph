@@ -38,7 +38,7 @@ var CurvePlotter = function(segments) {
 
 			// setup matrix B
 			var xDiff = lastPoint.X - firstPoint.X;
-			var x1 = xDiff * 3.0;
+			var x1 = xDiff / 3.0;
 			var x2 = 2.0 * x1;
 
 			var y1 = cubicPoly.EvaluateAt(x1);
