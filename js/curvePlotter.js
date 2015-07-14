@@ -1,7 +1,9 @@
 var CurvePlotter = function(segments) {
 	"use strict";
-
-	this.segments=segments;
+	
+	var that=this;
+	that.segments=segments;
+	
 
 
 /**
@@ -47,9 +49,9 @@ var CurvePlotter = function(segments) {
 
 			var B = [
 				[x1 - firstPoint.X * f1 - lastPoint.X / 27.0],
-				[x2 - firstpoint.X * f2 - lastpoint.X / 27.0],
-				[y1 - firstpoint.Y * f1 - lastpoint.Y / 27.0],
-				[y2 - firstpoint.Y * f2 - lastpoint.Y / 27.0]
+				[x2 - firstPoint.X * f2 - lastPoint.X / 27.0],
+				[y1 - firstPoint.Y * f1 - lastPoint.Y / 27.0],
+				[y2 - firstPoint.Y * f2 - lastPoint.Y / 27.0]
 			];
 
 			var C = numeric.dot(Ainv, B);
@@ -66,15 +68,17 @@ var CurvePlotter = function(segments) {
 			return ([p2, p3]);
 		}
 
-	
+
 
 	this.plotter =  function (e) {
 
 
-		debugger;
+
 
 		var ctx = e.drawingContext;
+		ctx.beginPath();
 
+		var graph = e.dygraph;
 		var path = new Path2D();
 		var segments = {};
 		var i;
@@ -85,20 +89,31 @@ var CurvePlotter = function(segments) {
 			// move context to the first point
 			path.moveTo(e.points[i].canvasx, e.points[i].canvasy);
 
-			var pt1 = e.points[i];
-			var pt2 = e.points[i + 1]
-			var poly = new CubicPoly(segmentData[i]);
+
+			var currentSegment=that.segments[i];
+			var poly = currentSegment.Polynomial();
+		debugger;
+
+
 			var firstP = {
-				X: pt1.x,
-				Y: pt1.y
+				X: graph.toDataXCoord(e.points[i].canvasx),
+				Y: graph.toDataYCoord(e.points[i].canvasy)
 			};
 			var lastP = {
-				X: pt2.x,
-				Y: pt2.y
+				X: graph.toDataXCoord(e.points[i+1].canvasx),
+				Y: graph.toDataYCoord(e.points[i+1].canvasy)
 			};
 			var cps = CalcBezierControlPoints(firstP, lastP, poly);
-			path.bezierCurveTo(cps[0].X, cps[0].Y, pt2.canvasx, pt2.canvasy);
-			path.stroke();
+
+			//convert back to canvas coord
+			var cp1X = graph.toDomXCoord(cps[0].X);
+			var cp1Y = graph.toDomYCoord(cps[0].Y);
+
+			var cp2X = graph.toDomXCoord(cps[1].X);
+			var cp2Y = graph.toDomXCoord(cps[1].Y);
+
+			ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y,e.points[i+1].canvasx, e.points[i+1].canvasy);
+			ctx.stroke();
 
 		}
 
