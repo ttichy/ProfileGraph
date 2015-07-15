@@ -5,11 +5,11 @@ var MotionSegment = function(t0,tf, poly) {
 };
 
 
-MotionSegment.prototype.Polynomial = function() {
+MotionSegment.prototype.MotionPoly = function() {
 	return this.motionEquation;
 }
 
-MotionSegment.prototype.EvaluateAt = function(x) {
+MotionSegment.prototype.EvaluatePositionAt = function(x) {
 	return this.motionEquation.EvaluateAt(x);
 }
 

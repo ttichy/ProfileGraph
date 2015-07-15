@@ -1,6 +1,6 @@
 	
     // *************** this data comes from the server **********
-    // var timeData=[0,0.33333333,0.666666666,1];
+ //    var timeData=[0,0.33333333,0.666666666,1];
 
  var timeData =
 
@@ -13935,13 +13935,13 @@ var CreatePlotDataFromSegments = function(segments){
     for (i = 0; i < len; i++) {
         
         t=segments[i].InitialTime();
-        y=segments[i].EvaluateAt(t);
+        y=segments[i].EvaluatePositionAt(t);
         result.push([t,y,y]);
     };
 
     // then have to add the final point
     var lastTime=segments[len-1].FinalTime();
-    var lastY = segments[len-1].EvaluateAt(lastTime);
+    var lastY = segments[len-1].EvaluatePositionAt(lastTime);
     result.push([lastTime,lastY,lastY]);
 
     return result;
@@ -13954,22 +13954,23 @@ var segments = CreateSegmentsFromData(timeData,segmentData);
 
 var data=CreatePlotDataFromSegments(segments);
 
+// var functionPlotter = new FunctionPlotter(segments);
 var curvePlotter = new CurvePlotter(segments);
-
 
 function plot() {
    g = new Dygraph(document.getElementById("graph"),
       data, {
          // options go here. See http://dygraphs.com/options.html
          legend: 'always',
-         animatedZooms: true,
+         animatedZooms: false,
          title: 'dygraphs chart template',
          labels: ["x", "PositionDots", "Position"],
+         // drawCallback: curvePlotter.drawCallback,
          series: {
             "PositionDots": {
                strokeWidth: 0,
                drawPoints: true,
-               fillGraph: true
+               fillGraph: false
             },
             "Position": {
                strokeWidth: 1,
