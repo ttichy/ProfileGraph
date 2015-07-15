@@ -62,7 +62,7 @@ var CurvePlotter = function(segments) {
 	this.plotter =  function (e) {
 
 
-debugger;
+
 
 		var ctx = e.drawingContext;
 		ctx.beginPath();
