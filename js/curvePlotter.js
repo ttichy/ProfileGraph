@@ -21,25 +21,11 @@ var CurvePlotter = function(segments) {
 			// 
 			// 
 			// Cubic Bezier is defined by 4 points. We already have two (firstPoint and lastPoint). 
-			// We  need to calculate the two control points
-			// control points are calcualed by using the parametric definition of a cubic bezier curve,
-			// picking two t values (1/3 and 2/3) and setting up a system of 4 equations and 4 unknowns
-			// the 4 unknowns are the two control points P2x, P2y, P3x, P3y
-
-			//define A matrix 
-			// var A = [
-			// 	[0.44444444444444, 0.222222222222222, 0, 0],
-			// 	[0, 0, 0.4444444444444444, 0.22222222222222],
-			// 	[0.22222222222222, 0.444444444444444, 0, 0],
-			// 	[0, 0, 0.2222222222222222, 0.4444444444444]
-			// ];
-
-			// var Ainv = numeric.inv(A);
-			// can be precalculated, because we always pick the same t = 1/3 and t=2/3
-			var Ainv = [
-				[3, -1.5],
-				[-1.5, 3]
-			];
+			// We  need to calculate the two control points P2 and P3. But we also have the two x coordinates of P2 and P3,
+			// because we are picking x at 1/3 and 2/3
+			// So we only need to calculate the y coord of P2 and P3. This is accomplished by using the parametric equation
+			// of bezier curve and setting up two equations and two unknowns
+			// As much as possible is pre-calculated to speed things up
 
 			// setup matrix B
 			var xDiff = lastPoint.X - firstPoint.X;
@@ -53,21 +39,20 @@ var CurvePlotter = function(segments) {
 			var f2 = 0.037037037037037037037; // (1-2/3)^3
 			var f3 = 0.296296296296296296296; // (2/3)^3
 
-			var B = [
-				[y1 - firstPoint.Y * f1 - lastPoint.Y / 27.0],
-				[y2 - firstPoint.Y * f2 - f3 * lastPoint.Y ]
-			];
+			var b1 = y1 - firstPoint.Y * f1 - lastPoint.Y / 27.0;
+			var b2 = y2 - firstPoint.Y * f2 - f3 * lastPoint.Y;
 
-			var C = numeric.dot(Ainv, B);
+			var c1 = (-2*b1+b2)/-0.666666666666666666;
+			var c2 = (b2 -0.2222222222222 * c1)/0.44444444444444444;
 
 			//collect matrix results into points
 			var p2 = {};
 			var p3 = {};
 			p2.X = x1;
-			p2.Y = C[0][0];
+			p2.Y = c1;
 
 			p3.X = x2;
-			p3.Y = C[1][0];
+			p3.Y = c2;
 
 			return ([p2, p3]);
 		}
@@ -77,7 +62,7 @@ var CurvePlotter = function(segments) {
 	this.plotter =  function (e) {
 
 
-
+debugger;
 
 		var ctx = e.drawingContext;
 		ctx.beginPath();
