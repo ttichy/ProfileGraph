@@ -27,31 +27,35 @@ var CurvePlotter = function(segments) {
 			// the 4 unknowns are the two control points P2x, P2y, P3x, P3y
 
 			//define A matrix 
-			var A = [
-				[0.44444444444444, 0.222222222222222, 0, 0],
-				[0.22222222222222, 0.444444444444444, 0, 0],
-				[0, 0, 0.4444444444444444, 0.22222222222222],
-				[0, 0, 0.2222222222222222, 0.4444444444444]
-			];
+			// var A = [
+			// 	[0.44444444444444, 0.222222222222222, 0, 0],
+			// 	[0, 0, 0.4444444444444444, 0.22222222222222],
+			// 	[0.22222222222222, 0.444444444444444, 0, 0],
+			// 	[0, 0, 0.2222222222222222, 0.4444444444444]
+			// ];
 
-			var Ainv = numeric.inv(A);
+			// var Ainv = numeric.inv(A);
+			// can be precalculated, because we always pick the same t = 1/3 and t=2/3
+			var Ainv = [
+				[3, -1.5],
+				[-1.5, 3]
+			];
 
 			// setup matrix B
 			var xDiff = lastPoint.X - firstPoint.X;
-			var x1 = xDiff / 3.0;
-			var x2 = 2.0 * x1;
+			var x1 = firstPoint.X + xDiff / 3.0;
+			var x2 = firstPoint.X + 2.0 * xDiff / 3.0;
 
 			var y1 = cubicPoly.EvaluateAt(x1);
 			var y2 = cubicPoly.EvaluateAt(x2);
 
-			var f1 = 0.296296296296296296296;
-			var f2 = 0.037037037037037037037;
+			var f1 = 0.296296296296296296296; // (1-1/3)^3
+			var f2 = 0.037037037037037037037; // (1-2/3)^3
+			var f3 = 0.296296296296296296296; // (2/3)^3
 
 			var B = [
-				[x1 - firstPoint.X * f1 - lastPoint.X / 27.0],
-				[x2 - firstPoint.X * f2 - lastPoint.X / 27.0],
 				[y1 - firstPoint.Y * f1 - lastPoint.Y / 27.0],
-				[y2 - firstPoint.Y * f2 - lastPoint.Y / 27.0]
+				[y2 - firstPoint.Y * f2 - f3 * lastPoint.Y ]
 			];
 
 			var C = numeric.dot(Ainv, B);
@@ -59,11 +63,11 @@ var CurvePlotter = function(segments) {
 			//collect matrix results into points
 			var p2 = {};
 			var p3 = {};
-			p2.X = C[0][0];
-			p2.Y = C[2][0];
+			p2.X = x1;
+			p2.Y = C[0][0];
 
-			p3.X = C[1][0];
-			p3.Y = C[3][0];
+			p3.X = x2;
+			p3.Y = C[1][0];
 
 			return ([p2, p3]);
 		}
@@ -79,20 +83,16 @@ var CurvePlotter = function(segments) {
 		ctx.beginPath();
 
 		var graph = e.dygraph;
-		var path = new Path2D();
+
 		var segments = {};
 		var i;
 		for (i = 0; i < e.points.length - 1; i++) {
 			// prepare points.
 			// need an begin and end point for each segment
 
-			// move context to the first point
-			path.moveTo(e.points[i].canvasx, e.points[i].canvasy);
-
-
-			var currentSegment=that.segments[i];
+			var currentSegment= that.segments[e.points[i].idx];
 			var poly = currentSegment.Polynomial();
-		debugger;
+
 
 
 			var firstP = {
@@ -110,7 +110,10 @@ var CurvePlotter = function(segments) {
 			var cp1Y = graph.toDomYCoord(cps[0].Y);
 
 			var cp2X = graph.toDomXCoord(cps[1].X);
-			var cp2Y = graph.toDomXCoord(cps[1].Y);
+			var cp2Y = graph.toDomYCoord(cps[1].Y);
+
+			// move context to the first point
+			ctx.moveTo(e.points[i].canvasx, e.points[i].canvasy);
 
 			ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y,e.points[i+1].canvasx, e.points[i+1].canvasy);
 			ctx.stroke();

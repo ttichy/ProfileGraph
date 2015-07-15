@@ -60,7 +60,7 @@ var CreatePlotDataFromSegments = function(segments){
  
 };
 
-debugger;
+
 var segments = CreateSegmentsFromData(timeData,segmentData);
 
 
@@ -79,9 +79,9 @@ function plot() {
             labels: ["x", "PositionDots", "Position"],
             series: {
                 "PositionDots": {
-                    strokeWidth: 2,
+                    strokeWidth: 0,
                     drawPoints: true,
-                    fillGraph: true
+                    fillGraph: false
                 },
                 "Position": {
                     strokeWidth: 1,
