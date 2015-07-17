@@ -13,10 +13,4 @@ MotionSegment.prototype.EvaluatePositionAt = function(x) {
 	return this.motionEquation.EvaluateAt(x);
 }
 
-MotionSegment.prototype.InitialTime = function() {
-	return this.initialTime;
-}
 
-MotionSegment.prototype.FinalTime = function() {
-	return this.finalTime;
-}

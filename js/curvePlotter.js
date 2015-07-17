@@ -5,14 +5,18 @@
  */
  var CurvePlotter = function(segments) {
 	"use strict";
+	
+	var DRAWCURVES_LIMIT=200;
 
 
 	var that = this;
 	that.segments = segments;
 
   	this.graph={};
+  	var canvasContext; // store canvas.. prolly  not ideall...
+  	var isDrawCurves;
+  	
 
-  	var DRAWCURVES_LIMIT=200;
 
 
 	/**
@@ -67,46 +71,83 @@
 	};
 
 
-  var drawHighlightShape=function(mouseCanvasx, x,points,row,seriesName){
-    	
-      var g=that.graph; //less typing
-      
+var drawHighlightShape = function(ctx,segment){
+	if(!!!ctx || !!!segment)
+		return;
+	
+	var g=that.graph;
+	debugger;
+	var canvasInitx= g.toDomXCoord(segment.initialTime);
+	var canvasInity = g.toDomYCoord(g.yAxisRange()[0]);
+	
+	ctx.moveTo(canvasInitx,canvasInity);
+	ctx.lineTo(canvasInitx,g.toDomYCoord(segment.EvaluatePositionAt(segment.initialTime)));
+	drawCurveForSegment(ctx,segment);
+	ctx.lineTo(g.toDomXCoord(segment.finalTime), canvasInity);
+	ctx.lineTo(canvasInitx,canvasInity);
+	ctx.closePath();
+	ctx.fillStyle = '#8ED6FF';
+	ctx.fill();
+	
+	
+}
+	
 
-      //find segment to highlight. By default Dygraphs highlights the closes point to mouse pointer
-      var dataX=g.toDataXCoord(mouseCanvasx);
-      
-      // dataX will be either left or right of the x value of row
-      var segmentAtRow = that.segments[row];      
-      
-      
-      
-    	
-    	// draw shape between row and row-1
-    	
-    	// calculate canvas coordinates
-    	
-  //   	var canvasYzero = graph.toDomYCoord(0);
-  //   	var p1x= that.segments[row].EvaluateAt()
-			
+/**
+ * Draws a curve for the current segment, does not stroke path
+ * @param  {Object} context        the context to draw path on
+ * @param  {MotionSegment} currentSegment the current motion segment
 
-		// 	ctx.lineTo(e.points[i + 1].canvasx,canvasYzero);
-		// 	ctx.lineTo(e.points[i].canvasx, canvasYzero);
-		// 	ctx.lineTo(e.points[i].canvasx,e.points[i].camvasy);
-			
-			
-		// 	        // complete custom shape
-  //       ctx.closePath();
-  //       ctx.lineWidth = 0;
-  //       ctx.fillStyle = '#8ED6FF';
-  //       ctx.fill();
-  //       ctx.strokeStyle = 'blue';
-			
-  };
+ */
+var drawCurveForSegment=function(context, currentSegment){
+	if(!!!context || !!! currentSegment)
+		throw new Error("Missing required arguments");
+
+	var g = that.graph;
+	
+	if(!!!currentSegment)
+		return;
+	
+	var firstP = {
+		X: currentSegment.initialTime,
+		Y: currentSegment.EvaluatePositionAt(currentSegment.initialTime)
+	};
+	var lastP = {
+		X: currentSegment.finalTime,
+		Y: currentSegment.EvaluatePositionAt(currentSegment.finalTime)
+	}
+	
+	var cps = CalcBezierControlPoints(firstP,lastP,currentSegment.MotionPoly())
+	
+	
+	var cp0X=g.toDomXCoord(firstP.X);
+	var cp0Y=g.toDomYCoord(firstP.Y);
+	
+	//convert back to canvas coord
+	var cp1X = g.toDomXCoord(cps[0].X);
+	var cp1Y = g.toDomYCoord(cps[0].Y);
+
+	var cp2X = g.toDomXCoord(cps[1].X);
+	var cp2Y = g.toDomYCoord(cps[1].Y);
+
+	var cp3X=g.toDomXCoord(currentSegment.finalTime);
+	var cp3Y=g.toDomYCoord(currentSegment.EvaluatePositionAt(currentSegment.finalTime));
+	
+	context.moveTo(cp0X,cp0Y);
+	
+	context.bezierCurveTo(cp1X,cp1Y,cp2X,cp2Y,cp3X,cp3Y);
+	
+	
+}
+
 
 
 	this.plotter = function(e) {
 
 		var ctx = e.drawingContext;
+
+		canvasContext=ctx;
+
 		ctx.beginPath();
 
 		var graph = e.dygraph;
@@ -114,44 +155,20 @@
 
 		if (e.points.length < DRAWCURVES_LIMIT) {
 
+			isDrawCurves = true;
 
 			var segments = {};
 			var i;
 			for (i = 0; i < e.points.length - 1; i++) {
-				// prepare points.
-				// need an begin and end point for each segment
 
 				var currentSegment = that.segments[e.points[i].idx];
-				var poly = currentSegment.MotionPoly();
 
+				drawCurveForSegment(ctx, currentSegment)
 
-				var firstP = {
-					X: graph.toDataXCoord(e.points[i].canvasx),
-					Y: graph.toDataYCoord(e.points[i].canvasy)
-				};
-				var lastP = {
-					X: graph.toDataXCoord(e.points[i + 1].canvasx),
-					Y: graph.toDataYCoord(e.points[i + 1].canvasy)
-				};
-				var cps = CalcBezierControlPoints(firstP, lastP, poly);
-
-				//convert back to canvas coord
-				var cp1X = graph.toDomXCoord(cps[0].X);
-				var cp1Y = graph.toDomYCoord(cps[0].Y);
-
-				var cp2X = graph.toDomXCoord(cps[1].X);
-				var cp2Y = graph.toDomYCoord(cps[1].Y);
-
-				// move context to the first point
-				ctx.moveTo(e.points[i].canvasx, e.points[i].canvasy);
-
-				ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, e.points[i + 1].canvasx, e.points[i + 1].canvasy);
-				
-        ctx.stroke();
-
-
+				ctx.stroke();
 			}
 		} else {
+			isDrawCurves = false;
 			Dygraph.Plotters.linePlotter(e);
 		}
 
@@ -177,10 +194,46 @@
       
   };
 
+  /**
+   * When the mouse moves over the canvas, highlight the segment under mouse cursor
+   * @param  {Object} event the mousemove event from the browser
+   * @return {[type]}       [description]
+   */
+  this.mouseMove=function(event){
+  	if(!isDrawCurves)
+  		return;		//too many data points on the graph
 
-  this.mouseMove=function(event, g, context){
-  	console.log("in mousemove");
-  }
+  	if(!!! that.graph)
+  		return;		// need graph
+
+  	var g=that.graph;
+
+	var canvasCoords = g.eventToDomCoords(event);
+	var canvasx = canvasCoords[0];
+	var canvasy = canvasCoords[1];
+
+	//find segment under mouse pointer 
+	//-> find the first x in segments that is greater than datax
+	var dataX=g.toDataXCoord(canvasx);
+	
+	var currentSegment;
+
+	var isFound=false;
+
+	//TODO binary search of the array, since it is sorted 
+	for (var i = 0; i < that.segments.length; i++) {
+		currentSegment = that.segments[i];
+		if (currentSegment.finalTime > dataX) {
+			isFound=true;
+			break;
+		}
+	};
+	if(isFound)
+	{
+		drawHighlightShape(canvasContext,currentSegment);
+	}
+
+  };
 
 
 

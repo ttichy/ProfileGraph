@@ -13934,13 +13934,13 @@ var CreatePlotDataFromSegments = function(segments){
 
     for (i = 0; i < len; i++) {
         
-        t=segments[i].InitialTime();
+        t=segments[i].initialTime;
         y=segments[i].EvaluatePositionAt(t);
         result.push([t,y,y]);
     };
 
     // then have to add the final point
-    var lastTime=segments[len-1].FinalTime();
+    var lastTime=segments[len-1].finalTime;
     var lastY = segments[len-1].EvaluatePositionAt(lastTime);
     result.push([lastTime,lastY,lastY]);
 
@@ -13962,9 +13962,9 @@ function plot() {
          // options go here. See http://dygraphs.com/options.html
          legend: 'always',
          animatedZooms: false,
-         title: 'dygraphs chart template',
+         title: 'Profile editor demo',
          labels: ["x", "PositionDots", "Position"],
-         // highlightCallback: curvePlotter.highlightCallback,
+          // highlightCallback: curvePlotter.highlightCallback,
          series: {
             "PositionDots": {
                strokeWidth: 0,
