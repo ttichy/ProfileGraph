@@ -6,7 +6,7 @@
  var CurvePlotter = function(segments) {
 	"use strict";
 	
-	var DRAWCURVES_LIMIT=200;
+	var DRAWCURVES_LIMIT=100;
 
 
 	var that = this;
@@ -15,6 +15,7 @@
   	this.graph={};
   	var canvasContext; // store canvas.. prolly  not ideall...
   	var isDrawCurves;
+  	var prevHiLitedSegment;	//stores the previously highlighted segment
   	
 
 
@@ -71,14 +72,26 @@
 	};
 
 
+	/**
+	 * [unHighlightPrevious description]
+	 * @param  {[type]} segment the previous segment to unhighlight/erase
+	 */
+	var unHighlightPrevious = function(ctx,segment) {
+		//redraw the chart for now
+		that.graph.updateOptions({});
+
+	}
+
 var drawHighlightShape = function(ctx,segment){
 	if(!!!ctx || !!!segment)
 		return;
-	
+
 	var g=that.graph;
-	debugger;
+	// debugger;
 	var canvasInitx= g.toDomXCoord(segment.initialTime);
 	var canvasInity = g.toDomYCoord(g.yAxisRange()[0]);
+
+	ctx.beginPath();
 	
 	ctx.moveTo(canvasInitx,canvasInity);
 	ctx.lineTo(canvasInitx,g.toDomYCoord(segment.EvaluatePositionAt(segment.initialTime)));
@@ -230,7 +243,9 @@ var drawCurveForSegment=function(context, currentSegment){
 	};
 	if(isFound)
 	{
+		unHighlightPrevious(canvasContext,prevHiLitedSegment);
 		drawHighlightShape(canvasContext,currentSegment);
+		prevHiLitedSegment=currentSegment;
 	}
 
   };
