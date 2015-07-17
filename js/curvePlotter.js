@@ -1,9 +1,18 @@
-var CurvePlotter = function(segments) {
+/**
+ * 
+ * @param {[MotionSegment]} segments 
+ * 
+ */
+ var CurvePlotter = function(segments) {
 	"use strict";
+
 
 	var that = this;
 	that.segments = segments;
 
+  	this.graph={};
+
+  	var DRAWCURVES_LIMIT=200;
 
 
 	/**
@@ -55,8 +64,44 @@ var CurvePlotter = function(segments) {
 		p3.Y = c2;
 
 		return ([p2, p3]);
-	}
+	};
 
+
+  var drawHighlightShape=function(mouseCanvasx, x,points,row,seriesName){
+    	
+      var g=that.graph; //less typing
+      
+
+      //find segment to highlight. By default Dygraphs highlights the closes point to mouse pointer
+      var dataX=g.toDataXCoord(mouseCanvasx);
+      
+      // dataX will be either left or right of the x value of row
+      var segmentAtRow = that.segments[row];      
+      
+      
+      
+    	
+    	// draw shape between row and row-1
+    	
+    	// calculate canvas coordinates
+    	
+  //   	var canvasYzero = graph.toDomYCoord(0);
+  //   	var p1x= that.segments[row].EvaluateAt()
+			
+
+		// 	ctx.lineTo(e.points[i + 1].canvasx,canvasYzero);
+		// 	ctx.lineTo(e.points[i].canvasx, canvasYzero);
+		// 	ctx.lineTo(e.points[i].canvasx,e.points[i].camvasy);
+			
+			
+		// 	        // complete custom shape
+  //       ctx.closePath();
+  //       ctx.lineWidth = 0;
+  //       ctx.fillStyle = '#8ED6FF';
+  //       ctx.fill();
+  //       ctx.strokeStyle = 'blue';
+			
+  };
 
 
 	this.plotter = function(e) {
@@ -65,9 +110,9 @@ var CurvePlotter = function(segments) {
 		ctx.beginPath();
 
 		var graph = e.dygraph;
-		debugger;
 
-		if (e.points.length < 50) {
+
+		if (e.points.length < DRAWCURVES_LIMIT) {
 
 
 			var segments = {};
@@ -101,18 +146,43 @@ var CurvePlotter = function(segments) {
 				ctx.moveTo(e.points[i].canvasx, e.points[i].canvasy);
 
 				ctx.bezierCurveTo(cp1X, cp1Y, cp2X, cp2Y, e.points[i + 1].canvasx, e.points[i + 1].canvasy);
-				ctx.stroke();
+				
+        ctx.stroke();
+
+
 			}
 		} else {
 			Dygraph.Plotters.linePlotter(e);
 		}
 
-	}
+	};
 
 
 	this.drawCallback = function(dygraph,is_initial){
 		console.log('drawing...');
-	}
+	};
+
+  this.highlightCallback = function(event, x, points, row, seriesName)
+  {
+
+    if(!!! that.graph)  //graph must be assigned in order to highlight
+      return;
+    
+    if(row===0)
+      return; // nothing to highlight
+    
+    var domCoords = that.graph.eventToDomCoords(event);
+      
+    drawHighlightShape(domCoords[0],x,points,row,seriesName);
+      
+  };
+
+
+  this.mouseMove=function(event, g, context){
+  	console.log("in mousemove");
+  }
+
+
 
 };
 
@@ -123,7 +193,11 @@ var CurvePlotter = function(segments) {
 
 CurvePlotter.prototype.Plotter = function() {
 	return this.plotter;
-}
+};
+
+CurvePlotter.prototype.setGraph = function(graph){
+  this.graph = graph;
+};
 
 
 

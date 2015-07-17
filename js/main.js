@@ -1,6 +1,6 @@
-	
+   
     // *************** this data comes from the server **********
- //    var timeData=[0,0.33333333,0.666666666,1];
+    // var timeData=[0,0.33333333,0.666666666,1];
 
  var timeData =
 
@@ -13948,9 +13948,7 @@ var CreatePlotDataFromSegments = function(segments){
  
 };
 
-
 var segments = CreateSegmentsFromData(timeData,segmentData);
-
 
 var data=CreatePlotDataFromSegments(segments);
 
@@ -13958,14 +13956,15 @@ var data=CreatePlotDataFromSegments(segments);
 var curvePlotter = new CurvePlotter(segments);
 
 function plot() {
-   g = new Dygraph(document.getElementById("graph"),
+   var graphDiv=document.getElementById("graph");
+   g = new Dygraph(graphDiv,
       data, {
          // options go here. See http://dygraphs.com/options.html
          legend: 'always',
          animatedZooms: false,
          title: 'dygraphs chart template',
          labels: ["x", "PositionDots", "Position"],
-         // drawCallback: curvePlotter.drawCallback,
+         // highlightCallback: curvePlotter.highlightCallback,
          series: {
             "PositionDots": {
                strokeWidth: 0,
@@ -13977,9 +13976,11 @@ function plot() {
                drawPoints: false,
                fillGraph: false,
                plotter: curvePlotter.plotter,
+
             },
          },
-
-
       });
+   curvePlotter.setGraph(g);
+   Dygraph.addEvent(graphDiv,'mousemove',curvePlotter.mouseMove);
+
 }
