@@ -13953,10 +13953,15 @@ var segments = CreateSegmentsFromData(timeData,segmentData);
 var data=CreatePlotDataFromSegments(segments);
 
 // var functionPlotter = new FunctionPlotter(segments);
-var curvePlotter = new CurvePlotter(segments);
+
 
 function plot() {
-   var graphDiv=document.getElementById("graph");
+
+   var svgElem = document.getElementById("svgGraph");
+   var curvePlotter = new CurvePlotter(segments,svgElem);
+
+
+   var graphDiv=document.getElementById("graphDiv");
    g = new Dygraph(graphDiv,
       data, {
          // options go here. See http://dygraphs.com/options.html
@@ -13980,7 +13985,18 @@ function plot() {
             },
          },
       });
+
    curvePlotter.setGraph(g);
    Dygraph.addEvent(graphDiv,'mousemove',curvePlotter.mouseMove);
+
+   //overlay svg -- too much work for now, doing it manually in html
+   // var svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+   // svg.setAttribute('width', g.width_);
+   // svg.setAttribute('height', g.height_);
+   // svg.setAttributeNS("http://www.w3.org/2000/xmlns/", "xmlns:xlink", "http://www.w3.org/1999/xlink");
+
+   // var parent=graphDiv.parentNode;
+
+   // parent.insertBefore(svg,graphDiv);
 
 }

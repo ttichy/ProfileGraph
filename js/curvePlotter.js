@@ -1,23 +1,25 @@
 /**
  * 
- * @param {[MotionSegment]} segments 
+ * @param {MotionSegment} segments 
  * 
  */
- var CurvePlotter = function(segments) {
+ var CurvePlotter = function(segs,svgEl) {
 	"use strict";
 	
 	var DRAWCURVES_LIMIT=100;
 
+	// private variables
+	var segments=segs;
 
-	var that = this;
-	that.segments = segments;
-
-  	this.graph={};
   	var canvasContext; // store canvas.. prolly  not ideall...
   	var isDrawCurves;
-  	var prevHiLitedSegment;	//stores the previously highlighted segment
-  	
+  	var prevHiLitedSegment;	//stores the previously highlighted segment		
 
+  	var that=this;
+
+  	// public variables
+  	this.graph={};
+	this.svg=svgEl;
 
 
 	/**
@@ -76,31 +78,48 @@
 	 * [unHighlightPrevious description]
 	 * @param  {[type]} segment the previous segment to unhighlight/erase
 	 */
-	var unHighlightPrevious = function(ctx,segment) {
-		//redraw the chart for now
-		that.graph.updateOptions({});
+	var unHighlightPrevious = function(segment) {
+		//simply remove all children of svg element
+		while(that.svg.firstChild)
+			that.svg.removeChild(that.svg.firstChild);
 
 	}
 
-var drawHighlightShape = function(ctx,segment){
-	if(!!!ctx || !!!segment)
-		return;
+var drawHighlightShape = function(segment){
+	if(!!!segment)
+		throw new Error("I need a segment to hightlight.");
 
-	var g=that.graph;
-	// debugger;
-	var canvasInitx= g.toDomXCoord(segment.initialTime);
-	var canvasInity = g.toDomYCoord(g.yAxisRange()[0]);
+	var graph=that.graph;
 
-	ctx.beginPath();
+
+	var canvasInitx= graph.toDomXCoord(segment.initialTime);
+	var canvasInity = graph.toDomYCoord(graph.yAxisRange()[0]);
+
+	var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'path'); //Create a path in SVG's namespace
+	var pathMove="M "+canvasInitx + "," + canvasInity;
+	var line1 = "L  "+canvasInitx +"," + graph.toDomYCoord(segment.EvaluatePositionAt(segment.initialTime));
+	var pts = calculatePointsForCurve(segment);
+	var curve="C "+ pts[2]+","+pts[3]+","+pts[4]+","+pts[5]+","+pts[6]+","+pts[7];
+	var line2 ="L "+canvasInitx+","+canvasInity;
+
+	newelement.setAttribute("d",pathMove+line1+curve+line2);
+
+	newelement.style.fillStyle='#8ED6FF';
+	that.svg.appendChild(newElement);
 	
-	ctx.moveTo(canvasInitx,canvasInity);
-	ctx.lineTo(canvasInitx,g.toDomYCoord(segment.EvaluatePositionAt(segment.initialTime)));
-	drawCurveForSegment(ctx,segment);
-	ctx.lineTo(g.toDomXCoord(segment.finalTime), canvasInity);
-	ctx.lineTo(canvasInitx,canvasInity);
-	ctx.closePath();
-	ctx.fillStyle = '#8ED6FF';
-	ctx.fill();
+
+
+
+	// ctx.beginPath();
+	
+	// ctx.moveTo(canvasInitx,canvasInity);
+	// ctx.lineTo(canvasInitx,graph.toDomYCoord(segment.EvaluatePositionAt(segment.initialTime)));
+	// drawCurveForSegment(ctx,segment);
+	// ctx.lineTo(graph.toDomXCoord(segment.finalTime), canvasInity);
+	// ctx.lineTo(canvasInitx,canvasInity);
+	// ctx.closePath();
+	// ctx.fillStyle = '#8ED6FF';
+	// ctx.fill();
 	
 	
 }
@@ -110,17 +129,12 @@ var drawHighlightShape = function(ctx,segment){
  * Draws a curve for the current segment, does not stroke path
  * @param  {Object} context        the context to draw path on
  * @param  {MotionSegment} currentSegment the current motion segment
-
+ * @return {Array} array of eight integers (x and y coords) representing the init point, two control points and final point
  */
-var drawCurveForSegment=function(context, currentSegment){
-	if(!!!context || !!! currentSegment)
-		throw new Error("Missing required arguments");
+var calculatePointsForCurve=function( currentSegment){
+	if( !!! currentSegment)
+		throw new Error("I need current segment!");
 
-	var g = that.graph;
-	
-	if(!!!currentSegment)
-		return;
-	
 	var firstP = {
 		X: currentSegment.initialTime,
 		Y: currentSegment.EvaluatePositionAt(currentSegment.initialTime)
@@ -132,25 +146,23 @@ var drawCurveForSegment=function(context, currentSegment){
 	
 	var cps = CalcBezierControlPoints(firstP,lastP,currentSegment.MotionPoly())
 	
+	var graph=that.graph;
 	
-	var cp0X=g.toDomXCoord(firstP.X);
-	var cp0Y=g.toDomYCoord(firstP.Y);
+	var cp0X=graph.toDomXCoord(firstP.X);
+	var cp0Y=graph.toDomYCoord(firstP.Y);
 	
 	//convert back to canvas coord
-	var cp1X = g.toDomXCoord(cps[0].X);
-	var cp1Y = g.toDomYCoord(cps[0].Y);
+	var cp1X = graph.toDomXCoord(cps[0].X);
+	var cp1Y = graph.toDomYCoord(cps[0].Y);
 
-	var cp2X = g.toDomXCoord(cps[1].X);
-	var cp2Y = g.toDomYCoord(cps[1].Y);
+	var cp2X = graph.toDomXCoord(cps[1].X);
+	var cp2Y = graph.toDomYCoord(cps[1].Y);
 
-	var cp3X=g.toDomXCoord(currentSegment.finalTime);
-	var cp3Y=g.toDomYCoord(currentSegment.EvaluatePositionAt(currentSegment.finalTime));
+	var cp3X=graph.toDomXCoord(currentSegment.finalTime);
+	var cp3Y=graph.toDomYCoord(currentSegment.EvaluatePositionAt(currentSegment.finalTime));
 	
-	context.moveTo(cp0X,cp0Y);
-	
-	context.bezierCurveTo(cp1X,cp1Y,cp2X,cp2Y,cp3X,cp3Y);
-	
-	
+	return [cp0X, cp0Y, cp1X,cp1Y,cp2X,cp2Y,cp3X,cp3Y];
+
 }
 
 
@@ -170,13 +182,16 @@ var drawCurveForSegment=function(context, currentSegment){
 
 			isDrawCurves = true;
 
-			var segments = {};
 			var i;
 			for (i = 0; i < e.points.length - 1; i++) {
 
-				var currentSegment = that.segments[e.points[i].idx];
+				var currentSegment = segments[e.points[i].idx];
 
-				drawCurveForSegment(ctx, currentSegment)
+				var pts=calculatePointsForCurve(currentSegment)
+
+				ctx.moveTo(pts[0],pts[1]);
+	
+				ctx.bezierCurveTo(pts[2],pts[3],pts[4],pts[5],pts[6],pts[7]);
 
 				ctx.stroke();
 			}
@@ -216,26 +231,26 @@ var drawCurveForSegment=function(context, currentSegment){
   	if(!isDrawCurves)
   		return;		//too many data points on the graph
 
-  	if(!!! that.graph)
+  	var graph=that.graph;
+
+  	if(!!! graph)
   		return;		// need graph
 
-  	var g=that.graph;
-
-	var canvasCoords = g.eventToDomCoords(event);
+	var canvasCoords = graph.eventToDomCoords(event);
 	var canvasx = canvasCoords[0];
 	var canvasy = canvasCoords[1];
 
 	//find segment under mouse pointer 
 	//-> find the first x in segments that is greater than datax
-	var dataX=g.toDataXCoord(canvasx);
+	var dataX=graph.toDataXCoord(canvasx);
 	
 	var currentSegment;
 
 	var isFound=false;
 
 	//TODO binary search of the array, since it is sorted 
-	for (var i = 0; i < that.segments.length; i++) {
-		currentSegment = that.segments[i];
+	for (var i = 0; i < segments.length; i++) {
+		currentSegment = segments[i];
 		if (currentSegment.finalTime > dataX) {
 			isFound=true;
 			break;
@@ -243,11 +258,12 @@ var drawCurveForSegment=function(context, currentSegment){
 	};
 	if(isFound)
 	{
-		unHighlightPrevious(canvasContext,prevHiLitedSegment);
-		drawHighlightShape(canvasContext,currentSegment);
+		unHighlightPrevious(prevHiLitedSegment);
+		drawHighlightShape(currentSegment);
 		prevHiLitedSegment=currentSegment;
 	}
 
+	return false;
   };
 
 
