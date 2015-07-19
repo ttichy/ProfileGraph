@@ -97,14 +97,15 @@ var drawHighlightShape = function(segment){
 
 	var newElement = document.createElementNS("http://www.w3.org/2000/svg", 'path'); //Create a path in SVG's namespace
 	var pathMove="M "+canvasInitx + "," + canvasInity;
-	var line1 = "L  "+canvasInitx +"," + graph.toDomYCoord(segment.EvaluatePositionAt(segment.initialTime));
+	var line1 = " L  "+canvasInitx +"," + graph.toDomYCoord(segment.EvaluatePositionAt(segment.initialTime));
 	var pts = calculatePointsForCurve(segment);
-	var curve="C "+ pts[2]+","+pts[3]+","+pts[4]+","+pts[5]+","+pts[6]+","+pts[7];
-	var line2 ="L "+canvasInitx+","+canvasInity;
+	var curve=" C "+ pts[2]+","+pts[3]+","+pts[4]+","+pts[5]+","+pts[6]+","+pts[7];
+	var line2 =" L "+graph.toDomXCoord(segment.finalTime)+","+canvasInity;
+	var line3 =" L "+canvasInitx+","+canvasInity;
 
-	newelement.setAttribute("d",pathMove+line1+curve+line2);
+	newElement.setAttribute("d",pathMove+line1+curve+line2+line3);
 
-	newelement.style.fillStyle='#8ED6FF';
+	newElement.style.fillStyle='#8ED6FF';
 	that.svg.appendChild(newElement);
 	
 
