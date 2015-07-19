@@ -13969,7 +13969,7 @@ function plot() {
          animatedZooms: false,
          title: 'Profile editor demo',
          labels: ["x", "PositionDots", "Position"],
-          // highlightCallback: curvePlotter.highlightCallback,
+          highlightCallback: curvePlotter.zoomCallback,
          series: {
             "PositionDots": {
                strokeWidth: 0,

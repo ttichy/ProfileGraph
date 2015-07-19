@@ -208,20 +208,24 @@ var calculatePointsForCurve=function( currentSegment){
 		console.log('drawing...');
 	};
 
-  this.highlightCallback = function(event, x, points, row, seriesName)
-  {
+  // this.highlightCallback = function(event, x, points, row, seriesName)
+  // {
 
-    if(!!! that.graph)  //graph must be assigned in order to highlight
-      return;
+  //   if(!!! that.graph)  //graph must be assigned in order to highlight
+  //     return;
     
-    if(row===0)
-      return; // nothing to highlight
+  //   if(row===0)
+  //     return; // nothing to highlight
     
-    var domCoords = that.graph.eventToDomCoords(event);
+  //   var domCoords = that.graph.eventToDomCoords(event);
       
-    drawHighlightShape(domCoords[0],x,points,row,seriesName);
+  //   drawHighlightShape(domCoords[0],x,points,row,seriesName);
       
-  };
+  // };
+
+  this.zoomCallback=function(minDate, maxDate, yRanges){
+  		unHighlightPrevious(prevHiLitedSegment)
+  }
 
   /**
    * When the mouse moves over the canvas, highlight the segment under mouse cursor
