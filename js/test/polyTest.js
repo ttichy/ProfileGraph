@@ -7,6 +7,7 @@ describe('Polynomial', function() {
 	});
 
 	it('Should create a new polynomial 4x^3+3x^2+2x+1 with startPoint=0 and evaluate correctly at 0,1,2', function(){
+		
 		var poly = new Polynomial([1,2,3,4],0);
 
 		poly.EvaluateAt(0).should.equal(1);
@@ -30,6 +31,21 @@ describe('Polynomial', function() {
 		(function() {
 			poly.EvaluateAt(0);
 		}).should.throw();
+
+	});
+
+	it('Should calculate 1st derivatve of -0.5x^3+0x^2+-1.5x+1 and evaluate it correctly', function(){
+		var poly = new Polynomial([1,1.5,0,-0.5],1);
+
+		var firstD = poly.Derivative();
+		firstD.should.be.instanceOf(Polynomial);		
+		firstD.should.be.ok();
+
+		// console.log(firstD.toPrettyString());
+
+
+		firstD.EvaluateAt(1).should.be.equal(1.5);
+		firstD.EvaluateAt(2).should.be.equal(0);
 
 	});
 
