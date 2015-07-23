@@ -9,12 +9,12 @@ var Polynomial = function(coeffArray,startPoint){
 	this.C = coeffArray[1];
 	this.D = coeffArray[0];
 	this.startPoint=startPoint;
-}
+};
 
 
 Polynomial.prototype.EvaluateAt = function(x) {
 	return this.A * Math.pow(x-this.startPoint,3) + this.B * Math.pow(x-this.startPoint,2) + this.C*(x-this.startPoint) + this.D;
-}
+};
 
 
 /**
@@ -27,4 +27,4 @@ Polynomial.prototype.Derivative = function() {
 	var D = C;
 
 	return new Polynomial([D,C,B]);
-}
+};

@@ -21,15 +21,15 @@ var BasicMotionSegment = function(t0,tf, poly) {
 
 BasicMotionSegment.prototype.EvaluatePositionAt = function(x) {
 	return this.positionPoly.EvaluateAt(x);
-}
+};
 
 
 BasicMotionSegment.prototype.EvaluateVelocityAt = function(x) {
 	return this.velocityPoly.EvaluateAt(x);
-}
+};
 
 BasicMotionSegment.prototype.EvaluateAccelAt = function(x) {
 	return this.velocityPoly.EvaluateAt(x);
-}
+};
 
 
