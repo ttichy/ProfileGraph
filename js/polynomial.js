@@ -13,6 +13,8 @@ var Polynomial = function(coeffArray,startPoint){
 
 
 Polynomial.prototype.EvaluateAt = function(x) {
+	if(x<this.startPoint)
+		throw new Error('Trying to evalute polynomial with x value less than the start point');
 	return this.A * Math.pow(x-this.startPoint,3) + this.B * Math.pow(x-this.startPoint,2) + this.C*(x-this.startPoint) + this.D;
 };
 
@@ -28,3 +30,9 @@ Polynomial.prototype.Derivative = function() {
 
 	return new Polynomial([D,C,B]);
 };
+
+
+// for testing under node
+if(typeof exports !== 'undefined'){
+	module.exports = Polynomial;
+}
